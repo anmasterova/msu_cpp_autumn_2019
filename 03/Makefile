@@ -4,7 +4,7 @@ all: task3
 	./ClassMatrix
 
 task3: ClassMatrix.o  
-	$(CC) ClassMatrix.o -o ClassMatrix 
+	$(CC) ClassMatrix.o main.cpp -o ClassMatrix 
 
 ClassMatrix.o: ClassMatrix.cpp
 	$(CC) -c ClassMatrix.cpp
