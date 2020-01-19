@@ -1,8 +1,6 @@
 /*BigInt*/
 
-#include <iostream>
 #include <algorithm>
-#include <cassert>
 #include <string>
 #include <cstdint>
 
@@ -19,47 +17,28 @@ class BigInt
 			data(nullptr),
 			isNegative(false)
 		{}
-
-		BigInt(int Int): 
-			isNegative(Int < 0)
-		{
-			std::string tmp;
-
-			if (isNegative) 
-				tmp = std::to_string(-Int);
-			else 
-				tmp = std::to_string(Int);
-
-			size = tmp.length();
-			data = new char [size];
-
-			for (size_t i = 0; i < size; i++)
-				data[i] = tmp[i];
-		}
 	
 		BigInt(const std::string& str)
 		{
-			std::string tmp;
+			size_t offset = 0;
 
 			if (str[0] == '-')
 			{
 				isNegative = true;
-				size = str.length() - 1;
-				tmp = str.substr(1, size);
+				offset = 1;
 			}
 			else
 			{
 				isNegative = false;
-					size = str.length();
-					tmp = str;
 			}
-	
+			size = str.size() - offset;
 			data  = new char[size];
 
-			for (size_t i = 0; i < size; i++ )
-				data[i] = tmp[i];
+			for (size_t i = offset; i < str.size(); i++)
+				data[i - offset] = str[i];
 		}
-		
+
+		BigInt(int Int) : BigInt(std::to_string(Int)) {}
 		BigInt(int64_t Int) : BigInt(std::to_string(Int)) {}
 
 		~BigInt()
@@ -259,8 +238,6 @@ std::ostream& operator<<(std::ostream& out, const BigInt& value)
 
 	for (size_t i = 0; i < value.size; i++)
 		out << value.data[i];
-
-	out << std::endl;
 
 	return out;
 }
