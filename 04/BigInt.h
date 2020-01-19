@@ -13,10 +13,10 @@ class BigInt
 	public:
 	
 		BigInt():
-			size(0),
-			data(nullptr),
+			size(1),
+			data(new char[1]),
 			isNegative(false)
-		{}
+		{data[0] = '0';}
 	
 		BigInt(const std::string& str)
 		{
