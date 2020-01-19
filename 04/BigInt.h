@@ -191,59 +191,157 @@ class BigInt
 		bool operator>=(const BigInt& other) const
 		{return !(*this < other);}
 
+		BigInt plus(const BigInt& first, const BigInt& second)
+		{
+			BigInt tmp;
+			int max_size = std::max(first.size, second.size) + 1;
+			int* sum = new int[max_size];
+			
+			for (size_t i = 0; i < max_size; i++)
+				sum[i] = 0;
+
+			for (size_t i = 0; i < max_size - 1; i++)
+			{
+				if (first.size >= 1 + i)
+					sum[max_size - 1 - i] += (first.data[first.size - 1 - i] - '0');
+				
+				if (second.size >= 1 + i)
+					sum[max_size - 1 - i] += (second.data[second.size - 1 - i] - '0');
+				sum[max_size - 2 - i] = sum[max_size - 1 - i] / 10;
+				sum[max_size - 1 - i] = sum[max_size - 1 - i] % 10;
+			}
+			if (sum[0] == 0)
+			{
+				tmp.size = max_size - 1;
+				tmp.data = new char[tmp.size];
+				for (size_t i = 0; i < tmp.size; i++)
+					tmp.data[i] = sum[i + 1] + '0';
+			}
+			else
+			{
+				tmp.size = max_size;
+				tmp.data = new char[tmp.size];
+				for (size_t i = 0; i < tmp.size; i++)
+					tmp.data[i] = sum[i] + '0';
+			}
+			delete[] sum;
+			return tmp;
+		}
+
+		BigInt minus(const BigInt& first, const BigInt& second)
+		{
+			if (second > first)
+					return -minus(second, first);
+
+			int* diff = new int[first.size];
+
+			for (size_t i = 0; i < first.size; i++)
+				diff[i] = first.data[i] - '0';
+
+			for (size_t i = 0; i < first.size - 1; i++)
+			{
+				if (second.size >= i + 1)
+					diff[first.size - 1 - i] -= second.data[second.size - 1 - i] - '0';
+				
+				if (diff[first.size - 1 - i] < 0)
+				{
+					diff[first.size - 1 - i] += 10;
+					diff[first.size - 2 - i] -= 1;
+				}
+			}
+
+			if (second.size == first.size)
+				diff[0] -= second.data[0] - '0';
+
+			size_t diffSize = first.size;
+
+			for (size_t i = 0; i < first.size; i++)
+			{
+				if (diff[i] == 0)
+					diffSize -= 1;
+				else
+					break;
+			}
+
+			BigInt tmp = first;
+			tmp.size = diffSize;
+			for (size_t i = 0; i < tmp.size; i++)
+				tmp.data[tmp.size - 1 - i] = diff[first.size - 1 - i] + '0';
+			delete[] diff;
+			return tmp;
+		}
+
 		BigInt operator+(const BigInt& other)
 		{
 			if ((isNegative == other.isNegative) && !isNegative)
+				return plus(*this, other);	
+			else if ((isNegative == other.isNegative) && isNegative)
+			{
+				BigInt tmp = plus(*this, other);
+				tmp.isNegative = true;
+				return tmp;
+			}
+			else
 			{
 				BigInt tmp;
-
-				int max_size = std::max(size, other.size) + 1;
-				int* sum = new int[max_size];
-
-				for (size_t i = 0; i < max_size; i++)
-					sum[i] = 0;
-
-				for (size_t i = 0; i < max_size - 1; i++)
+				
+				if (size > other.size)
 				{
-					if (size >= 1 + i)
-						sum[max_size - 1 - i] += (data[size - 1 - i] - '0');
-					
-					if (other.size >= 1 + i)
-						sum[max_size - 1 - i] += (other.data[other.size - 1 - i] - '0');
-					
-					sum[max_size - 2 - i] = sum[max_size - 1 - i] / 10;
-					sum[max_size - 1 - i] = sum[max_size - 1 - i] % 10;
-				}
-
-				if (sum[0] == 0)
-				{
-					tmp.size = max_size - 1;
-					tmp.data = new char[tmp.size];
-					for (size_t i = 0; i < tmp.size; i++)
-						tmp.data[i] = sum[i + 1] + '0';
+					tmp = minus(*this, other);
+					tmp.isNegative = isNegative;
 				}
 				else
 				{
-					tmp.size = max_size;
-					tmp.data = new char[tmp.size];
-					for (size_t i = 0; i < tmp.size; i++)
-						tmp.data[i] = sum[i] + '0';
+					tmp = minus(other, *this);
+					tmp.isNegative = other.isNegative;
 				}
-				delete [] sum;
+
 				return tmp;
 			}
 		}
 
-		BigInt operator+(const int& Int);
+		BigInt operator+(const int& Int)
+		{
+			BigInt tmp = Int;
+			return (*this + tmp);
+		}
 
 		friend BigInt operator+(const int& Int, const BigInt& bigInt);
 
 		BigInt operator-(const BigInt& other)
 		{
-			
+			if ((isNegative == other.isNegative) && !isNegative)
+				return minus(*this, other);	
+			else if ((isNegative == other.isNegative) && isNegative)
+			{
+				BigInt tmp = plus(-(*this), -(other));
+				tmp.isNegative = true;
+				return tmp;
+			}
+			else
+			{
+				BigInt tmp;
+				
+				if (!isNegative)
+				{
+					tmp = plus(-(*this), other);
+					tmp.isNegative = true;
+				}
+				else
+				{
+					tmp = plus(*this, -(other));
+					tmp.isNegative = true;				
+				}
+
+				return tmp;
+			}
 		}
 
-		BigInt operator-(const int& Int);
+		BigInt operator-(const int& Int)
+		{
+			BigInt tmp = Int;
+			return (*this - tmp);
+		}
 
 		friend BigInt operator-(const int& Int, const BigInt& bigInt);
 		
@@ -262,11 +360,14 @@ std::ostream& operator<<(std::ostream& out, const BigInt& value)
 				return out;
 			}
 
-int main(){
+BigInt operator+(const int& Int, const BigInt& bigInt)
+{
+	BigInt tmp = Int;
+	return (tmp + bigInt);
+}
 
-	BigInt a = 1;
-	BigInt b = a;
-	BigInt c = a + b + 2;
-
-	return 0;
+BigInt operator-(const int& Int, const BigInt& bigInt)
+{
+	BigInt tmp = Int;
+	return (tmp - bigInt);
 }
