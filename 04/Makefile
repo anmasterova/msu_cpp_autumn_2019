@@ -1,9 +1,9 @@
 CC=g++
 
-all: task1
-	./test $(file) "test.txt"
+all: task4
+	./test
 
-task1: test.o  
+task4: test.o  
 	$(CC) test.o -o test 
 
 test.o: test.cpp

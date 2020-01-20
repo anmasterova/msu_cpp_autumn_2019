@@ -303,20 +303,20 @@ class BigInt
 				
 				if (!isNegative)
 				{
-					tmp = plus(-(*this), other);
-					tmp.isNegative = true;
+					tmp = plus(*this, -(other));
+					tmp.isNegative = false;	
 				}
 				else
 				{
-					tmp = plus(*this, -(other));
-					tmp.isNegative = true;				
+					tmp = plus(-(*this), other);
+					tmp.isNegative = true;			
 				}
 
 				return tmp;
 			}
 		}
 
-		BigInt operator-(const int& Int)
+		BigInt operator-(const int& Int) const
 		{
 			BigInt tmp = Int;
 			return (*this - tmp);
