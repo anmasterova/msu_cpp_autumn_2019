@@ -109,7 +109,8 @@ class BigInt
 		BigInt operator-() const 
 		{
 			BigInt tmp (*this);
-			tmp.isNegative = !isNegative;
+			if (tmp.data[0] != '0')
+				tmp.isNegative = !isNegative;
 			return tmp;
 		}
 
@@ -117,6 +118,9 @@ class BigInt
 		bool operator==(const BigInt& other) const
 		{
 			if (this == &other)
+				return true;
+
+			if ((data[0] == '0') && (other.data[0] == '0'))
 				return true;
 
 			if (isNegative == other.isNegative && size == other.size)
@@ -191,10 +195,19 @@ class BigInt
 			}
 			if (sum[0] == 0)
 			{
-				tmp.size = max_size - 1;
-				tmp.data = new char[tmp.size];
-				for (size_t i = 0; i < tmp.size; i++)
-					tmp.data[i] = sum[i + 1] + '0';
+				if (sum[1] == 0)
+				{
+					tmp.size = 1;
+					tmp.data[0] = '0';
+					tmp.isNegative = false;
+				}
+				else
+				{
+					tmp.size = max_size - 1;
+					tmp.data = new char[tmp.size];
+					for (size_t i = 0; i < tmp.size; i++)
+						tmp.data[i] = sum[i + 1] + '0';
+				}
 			}
 			else
 			{
@@ -243,9 +256,20 @@ class BigInt
 			}
 
 			BigInt tmp = first;
-			tmp.size = diffSize;
-			for (size_t i = 0; i < tmp.size; i++)
-				tmp.data[tmp.size - 1 - i] = diff[first.size - 1 - i] + '0';
+
+			if (diffSize > 0)
+			{
+				
+				tmp.size = diffSize;
+				for (size_t i = 0; i < tmp.size; i++)
+					tmp.data[tmp.size - 1 - i] = diff[first.size - 1 - i] + '0';
+			}
+			else
+			{
+				tmp.size = 1;
+				tmp.data[0] = '0';
+				tmp.isNegative = false;
+			}
 			delete[] diff;
 			return tmp;
 		}
@@ -255,27 +279,12 @@ class BigInt
 			if ((isNegative == other.isNegative) && !isNegative)
 				return plus(*this, other);	
 			else if ((isNegative == other.isNegative) && isNegative)
-			{
-				BigInt tmp = plus(*this, other);
-				tmp.isNegative = true;
-				return tmp;
-			}
+				return -plus(-(*this), -(other));
 			else
 			{
-				BigInt tmp;
-				
-				if (size > other.size)
-				{
-					tmp = minus(*this, other);
-					tmp.isNegative = isNegative;
-				}
-				else
-				{
-					tmp = minus(other, *this);
-					tmp.isNegative = other.isNegative;
-				}
-
-				return tmp;
+				if (!isNegative)
+					return minus(*this, -(other));
+				else return -minus(-(*this), other);
 			}
 		}
 
@@ -292,27 +301,13 @@ class BigInt
 			if ((isNegative == other.isNegative) && !isNegative)
 				return minus(*this, other);	
 			else if ((isNegative == other.isNegative) && isNegative)
-			{
-				BigInt tmp = plus(-(*this), -(other));
-				tmp.isNegative = true;
-				return tmp;
-			}
+				return -minus(-(*this), -(other));
 			else
 			{
-				BigInt tmp;
-				
 				if (!isNegative)
-				{
-					tmp = plus(*this, -(other));
-					tmp.isNegative = false;	
-				}
+					return plus(*this, -(other));
 				else
-				{
-					tmp = plus(-(*this), other);
-					tmp.isNegative = true;			
-				}
-
-				return tmp;
+					return -plus(-(*this), other);
 			}
 		}
 
