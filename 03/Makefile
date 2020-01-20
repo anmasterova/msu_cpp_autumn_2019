@@ -1,13 +1,13 @@
 CC=g++
 
 all: task3
-	./ClassMatrix
+	./test
 
-task3: ClassMatrix.o  
-	$(CC) ClassMatrix.o -o ClassMatrix 
+task3: test.o  
+	$(CC) test.o -o test 
 
-ClassMatrix.o: ClassMatrix.cpp
-	$(CC) -c ClassMatrix.cpp
+test.o: test.cpp
+	$(CC) -c test.cpp
 
 clean:
-	rm -rf *.o ClassMatrix
+	rm -rf *.o test
