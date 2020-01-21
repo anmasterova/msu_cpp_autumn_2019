@@ -39,6 +39,8 @@ private:
     }
   };
 
+  void destruct(T *begin, T *end);
+
 public:
   using iterator = _Iterator<T>;
   using const_iterator = _Iterator<const T>;
@@ -61,7 +63,10 @@ public:
   ~Vector()
   {
     if (begin_)
+    {
+      destruct(begin_, end_);
       alloc_.deallocate(begin_, 0);
+    }
   }
 
   Size size() const { return end_ - begin_; }
@@ -109,6 +114,7 @@ void Vector<T, Alloc>::reserve(Size n)
   T *old = begin_;
   while (begin_ != end_)
     *it++ = *begin_++;
+  destruct(old, end_);
   begin_ = data;
   end_ = begin_ + (end_ - old);
   capacity_ = n;
@@ -121,6 +127,7 @@ void Vector<T, Alloc>::resize(Size n, const T &def)
   reserve(n);
   if (n <= size())
   {
+    destruct(begin_ + n, end_);
     end_ = begin_ + n;
   }
   else
@@ -142,12 +149,23 @@ void Vector<T, Alloc>::push_back(const T &value)
 template <class T, class Alloc>
 void Vector<T, Alloc>::pop_back()
 {
-  if (end_ != begin_)
-    --end_;
+  if (end_ == begin_)
+    return;
+  T *old = end_--;
+  destruct(end_, old);
 }
 
 template <class T, class Alloc>
 void Vector<T, Alloc>::clear()
 {
+  destruct(begin_, end_);
   end_ = begin_;
+}
+
+template <class T, class Alloc>
+void Vector<T, Alloc>::destruct(T *begin, T *end)
+{
+
+  while (begin != end)
+    (begin++)->~T();
 }
