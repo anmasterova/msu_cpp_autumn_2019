@@ -62,7 +62,7 @@ public:
 template <class T, class Alloc>
 T &Vector<T, Alloc>::at(Size i)
 {
-  if(i < size())
+  if (i < size())
     return operator[](i);
   else
     throw std::out_of_range("index exceed size");
@@ -98,4 +98,26 @@ void Vector<T, Alloc>::resize(Size n, const T &def)
     while (end_ != begin_ + n)
       *end_++ = def;
   }
+}
+
+template <class T, class Alloc>
+void Vector<T, Alloc>::push_back(const T &value)
+{
+  if (end_ == begin_ + capacity_)
+    reserve(2 * capacity_);
+
+  *end_++ = value;
+}
+
+template <class T, class Alloc>
+void Vector<T, Alloc>::pop_back()
+{
+  if (end_ != begin_)
+    --end_;
+}
+
+template <class T, class Alloc>
+void Vector<T, Alloc>::clear()
+{
+  end_ = begin_;
 }
