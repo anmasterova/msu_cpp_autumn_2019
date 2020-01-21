@@ -32,7 +32,7 @@ std::ostream& operator<<(std::ostream& out, const Test&)
 int main()
 {
     checkEqual(format(""), "");
-    //checkEqual(format("1"), "1");
+    checkEqual(format("1"), "1");
     checkEqual(format("{1}", 1, 2), "2");
     checkEqual(format("{0}{0}", "a"), "aa");
     checkEqual(format("{0}", Test()), "test");
