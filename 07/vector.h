@@ -13,23 +13,37 @@ private:
   T *end_;   // after last element
   Size capacity_;
 
-  class _Iterator : public Iterator<T>
+  template <class R>
+  class _Iterator : public Iterator<R>
   {
     friend class Vector;
+    _Iterator(T *p) : Iterator<R>(p) {}
   };
 
-  class _ReverseIterator : public Iterator<T>
+  template <class R>
+  class _ReverseIterator : public Iterator<R>
   {
     friend class Vector;
+    _ReverseIterator(T *p) : Iterator<R>(p) {}
 
   public:
-    T *operator++() { return Iterator<T>::operator--(); }
-    T *operator--() { return Iterator<T>::operator++(); }
+    _ReverseIterator &operator++()
+    {
+      Iterator<R>::operator--();
+      return *this;
+    }
+    _ReverseIterator &operator--()
+    {
+      Iterator<R>::operator++();
+      return *this;
+    }
   };
 
 public:
-  using iterator = _Iterator;
-  using reverse_iterator = _ReverseIterator;
+  using iterator = _Iterator<T>;
+  using const_iterator = _Iterator<const T>;
+  using reverse_iterator = _ReverseIterator<T>;
+  using const_reverse_iterator = _ReverseIterator<const T>;
 
   Vector(Size capacity = 0)
       : begin_(alloc_.allocate(capacity)),
@@ -44,12 +58,18 @@ public:
       *end_++ = *it++;
   }
 
+  ~Vector()
+  {
+    if (begin_)
+      alloc_.deallocate(begin_, 0);
+  }
+
   Size size() const { return end_ - begin_; }
   Size capacity() const { return capacity_; }
   bool empty() const { return size() == 0; }
 
   void reserve(Size n);
-  void resize(Size n, const T &def = T(0));
+  void resize(Size n, const T &def = T());
 
   void push_back(const T &value);
   void pop_back();
@@ -57,6 +77,16 @@ public:
 
   T &operator[](Size i) { return *(begin_ + i); }
   T &at(Size i);
+
+  iterator begin() { return _Iterator<T>(begin_); }
+  const_iterator cbegin() const { return _Iterator<const T>(begin_); }
+  iterator end() { return _Iterator<T>(end_); }
+  const_iterator cend() const { return _Iterator<const T>(end_); }
+
+  reverse_iterator rbegin() { return _ReverseIterator<T>(end_ - 1); }
+  const_reverse_iterator crbegin() const { return _ReverseIterator<const T>(end_ - 1); }
+  reverse_iterator rend() { return _ReverseIterator<T>(begin_ - 1); }
+  const_reverse_iterator crend() const { return _ReverseIterator<const T>(begin_ - 1); }
 };
 
 template <class T, class Alloc>
@@ -104,7 +134,7 @@ template <class T, class Alloc>
 void Vector<T, Alloc>::push_back(const T &value)
 {
   if (end_ == begin_ + capacity_)
-    reserve(2 * capacity_);
+    reserve((capacity_ == 0) ? 1 : 2 * capacity_);
 
   *end_++ = value;
 }
