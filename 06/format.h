@@ -35,6 +35,8 @@ std::string format(std::string str, Args... input){
     char rtok = '}';
     while(std::getline(ss, tmp, ltok)){
         result << tmp;
+        if(ss.eof() && tmp.find(rtok) == std::string::npos)
+            break;
         int index;
         ss >> index;
         if (index < 0)
